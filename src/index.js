@@ -9,6 +9,8 @@ const ADDONS = {
   },
 };
 
+const CLOUDSTREAM_PLUGIN_LIST = "https://raw.githubusercontent.com/Abodabodd/re-3arabi/refs/heads/builds/plugins.json";
+
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -51,6 +53,31 @@ export default {
       if (url.pathname === "/" || url.pathname === "/health") {
         return json({ name: "ArabStream API", status: "ok" });
       }
+      if (url.pathname === "/api/cloudstream/plugins") {
+        const source = await upstream(CLOUDSTREAM_PLUGIN_LIST);
+        if (!Array.isArray(source)) return json({ error: "Invalid CloudStream plugin list" }, 502);
+        const plugins = source.filter((plugin) => plugin && plugin.status === 1).map((plugin) => ({
+          id: plugin.internalName || plugin.name,
+          name: plugin.name || plugin.internalName || "Unnamed extension",
+          language: plugin.language || "unknown",
+          types: Array.isArray(plugin.tvTypes) ? plugin.tvTypes : [],
+          version: plugin.version ?? null,
+          description: plugin.description || "",
+          icon: plugin.iconUrl || "",
+          runtime: "CloudStream / Kotlin",
+          compatible: false,
+        }));
+        return json({
+          repository: "3rabi عربي",
+          source: CLOUDSTREAM_PLUGIN_LIST,
+          runtime: "CloudStream / Kotlin",
+          compatibleWithArabStream: false,
+          note: "هذه بيانات فهرسة فقط؛ تشغيل الإضافات يحتاج محول توافق مستقل.",
+          total: plugins.length,
+          plugins,
+        });
+      }
+
       if (url.pathname === "/api/addons") {
         return json({ addons: Object.entries(ADDONS).map(([id, a]) => ({
           id, name: a.name, manifest: a.manifest,
