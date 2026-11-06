@@ -56,7 +56,7 @@ export default {
       if (url.pathname === "/api/cloudstream/plugins") {
         const source = await upstream(CLOUDSTREAM_PLUGIN_LIST);
         if (!Array.isArray(source)) return json({ error: "Invalid CloudStream plugin list" }, 502);
-        const plugins = source.filter((plugin) => plugin && plugin.status === 1).map((plugin) => ({
+        const plugins = source.filter((plugin) => plugin && plugin.status === 1 && !/youtube/i.test([plugin.name, plugin.internalName, plugin.url].filter(Boolean).join(" "))).map((plugin) => ({
           id: plugin.internalName || plugin.name,
           name: plugin.name || plugin.internalName || "Unnamed extension",
           language: plugin.language || "unknown",
