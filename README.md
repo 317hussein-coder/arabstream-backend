@@ -1,24 +1,16 @@
-# ArabStream Backend
+# ArabStream Backend — Cloudflare Workers
 
-FastAPI bridge for the initial Stremio-compatible ArabStream providers.
+A lightweight JavaScript Worker that exposes a unified API for the initial Stremio-compatible providers.
 
-## Included providers
-- `bidooo` — Bidooo Arabic Catalog
-- `cartoon-aziz` — Cartoon Aziz
+## Deploy
+Cloudflare Workers Builds:
+- Build command: `npm install`
+- Deploy command: `npx wrangler deploy`
+- Preview command: `npx wrangler dev`
 
-The API reads provider manifests and proxies catalog, metadata, and stream JSON. It does not download or host video files.
+The repository includes `wrangler.toml` and `package.json`.
 
-## Run locally
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-Open `/docs` for the API explorer and `/health` for the health check.
-
-## API routes
+## Routes
 - `GET /health`
 - `GET /api/addons`
 - `GET /api/addons/{addon_id}/manifest`
@@ -26,19 +18,12 @@ Open `/docs` for the API explorer and `/health` for the health check.
 - `GET /api/meta/{addon_id}/{media_type}/{item_id}`
 - `GET /api/streams/{addon_id}/{media_type}/{item_id}`
 
-Supported add-on IDs: `bidooo`, `cartoon-aziz`. Supported media types: `movie`, `series`.
+Provider IDs: `bidooo`, `cartoon-aziz`. Media types: `movie`, `series`.
 
-## Deploy on Render
-1. In Render, choose **New +** → **Blueprint**.
-2. Connect GitHub and select `317hussein-coder/arabstream-backend`.
-3. Render detects `render.yaml`; review and create the service.
-4. After deployment, test `https://YOUR-SERVICE.onrender.com/health`.
-
-## Important integration notes
-- This is an initial backend, not a completed streaming site deployment.
-- Provider endpoints must be tested after deployment; availability and returned streams depend on each provider.
-- The Cartoon Aziz manifest currently declares its movies catalog with type `series`; this adapter does not silently rewrite provider IDs or catalog types.
-- Browser playback depends on the returned stream format, CORS, and browser support. MP4 and HLS are common formats, but not every source is guaranteed to play.
-- CloudStream `.cs3` plugins are not Stremio add-ons and are not executable by this API. They need a separate compatible runtime or individually implemented adapters.
-- CORS is open for the MVP. Before production, replace `allow_origins=["*"]` in `app/main.py` with the exact ArabStream Wix origin.
-- Only connect sources and streams you are authorized to use. This project does not bypass DRM or access controls.
+## Notes
+- This Worker proxies provider JSON; it does not host or download video files.
+- Provider uptime, returned stream availability, browser CORS, and media format support are outside this Worker's control.
+- Cartoon Aziz currently declares its movies catalog using type `series`; this Worker does not rewrite provider IDs or catalog types.
+- CloudStream `.cs3` extensions are not Stremio add-ons and are not executed here.
+- CORS is open for the MVP. Restrict `Access-Control-Allow-Origin` to the Wix site domain before production.
+- Use only sources and streams you are authorized to access. No DRM or access-control bypass is implemented.
